@@ -3,10 +3,30 @@ import { ApolloServer, gql } from 'apollo-server-express';
 
 const port = process.env.PORT || 4000;
 
+// Данные
+let notes = [
+    { id: '1', title: 'Note 1', content: 'Hello World 1!', author: 'Testov' },
+    { id: '2', title: 'Note 2', content: 'Hello World 2!', author: 'Test 1' },
+    { id: '3', title: 'Note 3', content: 'Hello World 3!', author: 'Test 3' },
+]
+
 // Определим схему GraphQL
+
+
 const typeDefs = gql`
+    type Note {
+        id: ID!,
+        title: String!,
+        content: String!,
+        author: String!
+    },
     type Query {
-        hello: String
+        hello: String!,
+        notes: [Note!]!,
+        note(id: ID!): Note!
+    },
+    type Mutation {
+        newNote(content: String!): Note!
     }
 `;
 
@@ -14,7 +34,23 @@ const typeDefs = gql`
 const resolvers = {
     Query: {
         hello: () => 'Hello World',
+        notes: () => notes,
+        note: (parent, args) => {
+            return notes.find(note => note.id === args.id);
+        }
     },
+    Mutation: {
+        newNote: (parent, args) => {
+            let note = {
+                id: notes.length + 1,
+                title: 'New Note',
+                content: args.content,
+                author: 'Unknown'
+            };
+            notes.push(note);
+            return note;
+        }
+    }
 };
 
 // Старт сервера
