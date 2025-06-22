@@ -1,7 +1,11 @@
-import express from 'express';
-import { ApolloServer, gql } from 'apollo-server-express';
+import dotenv from 'dotenv'; // Для dotenv
+dotenv.config();
 
+import express from 'express';
+import db from './db.js';    // Подключение базы данных
+import { ApolloServer, gql } from 'apollo-server-express';
 const port = process.env.PORT || 4000;
+const DB_HOST = process.env.DB_HOST;
 
 // Данные
 let notes = [
@@ -11,7 +15,6 @@ let notes = [
 ]
 
 // Определим схему GraphQL
-
 
 const typeDefs = gql`
     type Note {
@@ -61,6 +64,8 @@ async function startServer() {
             typeDefs,
             resolvers,
         });
+
+        db.connect(DB_HOST);
 
         // Ждём, пока сервер стартует
         await server.start();
