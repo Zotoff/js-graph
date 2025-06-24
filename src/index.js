@@ -3,6 +3,7 @@ dotenv.config();
 
 import express from 'express';
 import db from './db.js';    // Подключение базы данных
+import models from './models/index.js';
 import { ApolloServer, gql } from 'apollo-server-express';
 const port = process.env.PORT || 4000;
 const DB_HOST = process.env.DB_HOST;
@@ -37,21 +38,19 @@ const typeDefs = gql`
 const resolvers = {
     Query: {
         hello: () => 'Hello World',
-        notes: () => notes,
-        note: (parent, args) => {
-            return notes.find(note => note.id === args.id);
+        notes: async () => {
+            return await models.Note.find();
+        },
+        note: async (parent, args) => {
+            return await models.Note.findById(args.id);
         }
     },
     Mutation: {
-        newNote: (parent, args) => {
-            let note = {
-                id: notes.length + 1,
-                title: 'New Note',
+        newNote: async (parent, args) => {
+            return await models.Note.create({
                 content: args.content,
-                author: 'Unknown'
-            };
-            notes.push(note);
-            return note;
+                author: "Me"
+            })
         }
     }
 };
