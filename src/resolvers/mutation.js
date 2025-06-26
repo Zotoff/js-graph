@@ -31,5 +31,3 @@ module.exports = {
     );
   },
 }
-
-/* 6858f5a9d5bf71518f7c34ef */
