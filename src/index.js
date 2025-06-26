@@ -7,10 +7,23 @@ const DB_HOST = process.env.DB_HOST;
 import express from 'express';
 import db from './db.js';    // Подключение базы данных
 import { ApolloServer } from 'apollo-server-express';
+import jwt from 'jsonwebtoken';
 
 import models from './models/index.js';
 import typeDefs from './schema.js';
 import resolvers from './resolvers/index.js';
+
+const getUser = token => {
+  if (token) {
+    try {
+      // Возвращаем информацию пользователя из токена
+      return jwt.verify(token, process.env.JWT_SECRET);
+    } catch (err) {
+      // Если с токеном возникла проблема, выбрасываем ошибку
+      new Error('Session invalid');
+    }
+  }
+};
 
 // Старт сервера
 async function startServer() {
@@ -19,8 +32,14 @@ async function startServer() {
         const server = new ApolloServer({
             typeDefs,
             resolvers,
-            context: () => {
-                return {models} // добавляем модели в контекст
+            context: ({req}) => {
+              // Получаем токен пользователя из заголовков
+              const token = req.headers.authorization;
+              // Пытаемся извлечь пользователя с помощью токена
+              const user = getUser(token);
+              // Пока что будем выводить информацию о пользователе в консоль:
+              console.log(user);
+                return {models, user} // добавляем модели в контекст
             }
         });
 
