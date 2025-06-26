@@ -1,59 +1,16 @@
 import dotenv from 'dotenv'; // Для dotenv
 dotenv.config();
 
-import express from 'express';
-import db from './db.js';    // Подключение базы данных
-import models from './models/index.js';
-import { ApolloServer, gql } from 'apollo-server-express';
 const port = process.env.PORT || 4000;
 const DB_HOST = process.env.DB_HOST;
 
-// Данные
-let notes = [
-    { id: '1', title: 'Note 1', content: 'Hello World 1!', author: 'Testov' },
-    { id: '2', title: 'Note 2', content: 'Hello World 2!', author: 'Test 1' },
-    { id: '3', title: 'Note 3', content: 'Hello World 3!', author: 'Test 3' },
-]
+import express from 'express';
+import db from './db.js';    // Подключение базы данных
+import { ApolloServer } from 'apollo-server-express';
 
-// Определим схему GraphQL
-
-const typeDefs = gql`
-    type Note {
-        id: ID!,
-        title: String!,
-        content: String!,
-        author: String!
-    },
-    type Query {
-        hello: String!,
-        notes: [Note!]!,
-        note(id: ID!): Note!
-    },
-    type Mutation {
-        newNote(content: String!): Note!
-    }
-`;
-
-// Резолверы
-const resolvers = {
-    Query: {
-        hello: () => 'Hello World',
-        notes: async () => {
-            return await models.Note.find();
-        },
-        note: async (parent, args) => {
-            return await models.Note.findById(args.id);
-        }
-    },
-    Mutation: {
-        newNote: async (parent, args) => {
-            return await models.Note.create({
-                content: args.content,
-                author: "Me"
-            })
-        }
-    }
-};
+import models from './models/index.js';
+import typeDefs from './schema.js';
+import resolvers from './resolvers/index.js';
 
 // Старт сервера
 async function startServer() {
@@ -62,6 +19,9 @@ async function startServer() {
         const server = new ApolloServer({
             typeDefs,
             resolvers,
+            context: () => {
+                return {models} // добавляем модели в контекст
+            }
         });
 
         db.connect(DB_HOST);
