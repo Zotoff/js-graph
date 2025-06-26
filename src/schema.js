@@ -13,7 +13,9 @@ const typeDefs = gql`
   }
 
   type Mutation {
-  newNote(content: String!): Note!
+    newNote(content: String!): Note!,
+    updateNote(id: ID!, content: String!): Note!
+    deleteNote(id: ID!): Boolean!
   }
   `;
 
