@@ -4,16 +4,19 @@ const typeDefs = gql`
   scalar DateTime
   
   type Note {
-  id: ID!
-  content: String!
-  author: User!
+    id: ID!
+    content: String!
+    author: User!
     createdAt: DateTime!
     updatedAt: DateTime!
   }
 
   type Query {
-  notes: [Note!]!
-  note(id: ID!): Note!
+    notes: [Note!]!
+    note(id: ID!): Note!
+    user(email: String!): User!
+    me: User!
+    users: [User!]!
   }
 
   type Mutation {
@@ -34,3 +37,5 @@ const typeDefs = gql`
   `;
 
 export default typeDefs;
+
+/* eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4NWUzMGY0NTNhYThhNjkwMjM1NmNlYyIsImlhdCI6MTc1MTAwMzM4MH0.0wCud6HqS0Ps_zKStZWhMOjtjmXAYGY0LZSh8lIpAJo */

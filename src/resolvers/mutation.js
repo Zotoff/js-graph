@@ -1,5 +1,6 @@
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
+import mongoose from 'mongoose'
 
 import {
   AuthenticationError,
@@ -11,23 +12,45 @@ import gravatar from '../util/gravatar.js'; // Для dotenv
 dotenv.config();
 
 const Mutation = {
-  newNote: async (parent, args, { models }) => {
+  newNote: async (parent, args, { models, user }) => {
+    if (!user) {
+      throw new ForbiddenError('Not authorized');
+    }
     return await models.Note.create({
       content: args.content,
-      author: "Me"
+      author: new mongoose.Types.ObjectId(user.id)
     })
   },
-  deleteNote: async (parent, { id }, { models }) => {
+  deleteNote: async (parent, { id }, { models, user }) => {
+    if (!user) {
+      throw new ForbiddenError('Not authorized');
+    }
+    const note = await models.Note.findById(id);
+    // если автор не совпадает с пользователем, выбрасываем ошибку
+    if (note && note.author.toString() !== user.id) {
+      throw new ForbiddenError(
+        'You are not the author of this note'
+      );
+    }
+
     try {
-      await models.Note.findOneAndDelete({
-        _id: id
-      })
+      await note.remove();
       return true
     } catch (err) {
       return false
     }
   },
-  updateNote: async (parent, { content, id }, { models }) => {
+  updateNote: async (parent, { content, id }, { models, user }) => {
+    if (!user) {
+      throw new ForbiddenError('Not authorized');
+    }
+    // находим заметку
+    const note = await models.Note.findById(id);
+    if (note && note.author.toString() !== user.id) {
+      throw new ForbiddenError(
+        'You are not the author of this note'
+      );
+    }
     return await models.Note.findOneAndUpdate(
       {
         _id: id,

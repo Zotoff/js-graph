@@ -4,12 +4,13 @@ const mongoose = require('mongoose');
 const noteSchema = new mongoose.Schema(
     {
         content: {
-        type: String,
-        required: true
+          type: String,
+          required: true
         },
         author: {
-        type: String,
-        required: true
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'User',
+          required: true
         }
     },
     {
