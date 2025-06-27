@@ -123,7 +123,47 @@ const Mutation = {
 
     // Создаем и возвращаем json web token
     return jwt.sign({ id: user._id }, process.env.JWT_SECRET);
+  },
+  toggleFavorite: async (parent, { id }, { models, user }) => {
+    if (!user) {
+      throw new ForbiddenError('Not authorized');
+    }
+    let noteCheck = await models.Note.findById(id);
+    const hasUser = noteCheck.favoritedBy.indexOf(user.id);
 
+    if (hasUser >= 0) {
+      return await models.Note.findOneAndUpdate(
+        { _id: id },
+        {
+          $pull: {
+            favoritedBy: new mongoose.Types.ObjectId(user.id)
+          },
+          $inc: {
+            favoriteCount: -1
+          }
+        },
+        {
+          // возвращаем обновленную заметку
+          new: true
+        }
+      )
+    } else {
+      return await models.Note.findOneAndUpdate(
+        { _id: id },
+        {
+          $push: {
+            favoritedBy: new mongoose.Types.ObjectId(user.id)
+          },
+          $inc: {
+            favoriteCount: 1
+          }
+        },
+        {
+          // возвращаем обновленную заметку
+          new: true
+        }
+      )
+    }
   }
 }
 
